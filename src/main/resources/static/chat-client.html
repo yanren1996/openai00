@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>openAI-ChatClient</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+<h1>openAI-ChatClient</h1>
+<label><input id="isStream" type="checkbox">stream</label>
+<br>
+<label>ai人設<textarea id="sys" cols="30" rows="3" placeholder="在此描述AI性格，例如:你是個喜換使用顏文字的ai"></textarea></label>
+<label>提問<textarea id="msg" cols="30" rows="3"></textarea></label>
+<button id="btn">提問</button>
+<div id="history"></div>
+
+<script>
+    const isStream = document.getElementById('isStream');
+    const sys = document.getElementById('sys');
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btn');
+    const history = document.getElementById('history');
+
+    let qCount = 0;
+    btn.addEventListener('click', async () => {
+        // 問題計數
+        const current = qCount;
+        qCount++;
+        // 清空輸入並顯示提問
+        const enterMsg = msg.value;
+        msg.value = '';
+        addMsg(enterMsg, 'p', true);
+        // ai回應
+        if (!isStream.checked) {
+            const ajax = await fetch(`ai/chat-client?message=${enterMsg}&system=${sys.value}`);
+            const text = await ajax.text();
+            addMsg(text);
+        }else {
+            const sse = new EventSource(`ai/chat-client/stream?message=${enterMsg}&system=${sys.value}`);
+            sse.addEventListener('message', msg => {
+                if (msg.data !== '%end%') {
+                    continueMsg(msg.data, current);
+                } else {
+                    sse.close();
+                }
+            });
+        }
+    });
+
+    /** 以下全部複製chat-model */
+    // 創建訊息
+    function addMsg(msg, tag = 'p', isQuestion) {
+        const newMsg = document.createElement(tag);
+        newMsg.innerText = msg;
+        if (isQuestion) {
+            newMsg.setAttribute('class', 'question')
+        }
+        history.appendChild(newMsg);
+        history.scrollTop = history.scrollHeight;
+    }
+
+    // 連續訊息的創建與接續
+    function continueMsg(msg, id) {
+        let streamMsg = document.getElementById(id);
+        if (streamMsg) {
+            streamMsg.innerText += msg;
+        } else {
+            streamMsg = document.createElement('p');
+            streamMsg.setAttribute('id', id);
+            streamMsg.innerText = msg;
+            history.appendChild(streamMsg);
+        }
+        history.scrollTop = history.scrollHeight;
+    }
+
+</script>
+</body>
+</html>

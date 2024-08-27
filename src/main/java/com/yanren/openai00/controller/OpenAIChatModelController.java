@@ -1,5 +1,6 @@
 package com.yanren.openai00.controller;
 
+import com.yanren.openai00.consumer.SseConsumer;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -12,7 +13,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 @RestController
 @RequestMapping("/ai/chat-model")
@@ -51,7 +51,7 @@ public class OpenAIChatModelController {
     }
 
     @GetMapping("/stream/metadata")
-    SseEmitter streamMetadata(@RequestParam(value = "message", defaultValue = "你好") String message){
+    SseEmitter streamMetadata(@RequestParam(value = "message", defaultValue = "你好") String message) {
         Flux<ChatResponse> stream = chatModel.stream(new Prompt(message));
         SseEmitter sse = new SseEmitter();
         stream.subscribe(
@@ -64,17 +64,4 @@ public class OpenAIChatModelController {
 
 }
 
-class SseConsumer<T> implements Consumer<T>{
-    private final SseEmitter sse;
-    public SseConsumer(SseEmitter sse){
-        this.sse = sse;
-    }
-    @Override
-    public void accept(T message) {
-        try {
-            sse.send(message);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-}
+
