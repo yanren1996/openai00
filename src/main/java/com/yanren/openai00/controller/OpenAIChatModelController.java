@@ -20,7 +20,7 @@ public class OpenAIChatModelController {
     @Autowired
     ChatModel chatModel;
 
-    @GetMapping("/call")
+    @GetMapping
     String call(@RequestParam(value = "message", defaultValue = "你好") String message) {
         return chatModel.call(message);
     }

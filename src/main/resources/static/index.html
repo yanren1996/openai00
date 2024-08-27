@@ -33,28 +33,27 @@
 <script>
     const msg = document.getElementById("msg");
     const btn = document.getElementById("btn");
-    const is_stream = document.getElementById("isStream");
-    const is_Metadata = document.getElementById("isMetadata");
+    const isStream = document.getElementById("isStream");
+    const isMetadata = document.getElementById("isMetadata");
     const history = document.getElementById("history");
 
     btn.addEventListener("click", () => {
-        if (is_stream.checked) {
-            streamSubmit();
-        } else {
-            callSubmit();
-
-        }
-    })
-
-    async function callSubmit() {
         // 清空輸入框
         const enterMsg = msg.value;
         msg.value = '';
         // 印出user輸入內容
         addMsg(enterMsg, 'p', true);
-        // 印出ai回應
-        const ajax = await fetch(`/ai/chat-model${is_Metadata.checked ? '/metadata' : '/call'}?message=${enterMsg}`);
-        if (is_Metadata.checked) {
+        // 提交至server
+        if (isStream.checked) {
+            streamSubmit(enterMsg);
+        } else {
+            callSubmit(enterMsg);
+        }
+    })
+
+    async function callSubmit(enterMsg) {
+        const ajax = await fetch(`/ai/chat-model${isMetadata.checked ? '/metadata' : ''}?message=${enterMsg}`);
+        if (isMetadata.checked) {
             // 先將json轉js物件，再將js物件格式化
             addMsg(JSON.stringify(JSON.parse(await ajax.text()), null, 2), 'pre');
         } else {
@@ -64,19 +63,14 @@
 
     let streamCount = 0;
 
-    function streamSubmit() {
+    function streamSubmit(enterMsg) {
         // id計數
         const current = streamCount;
         streamCount++;
-        // 清空輸入框
-        const enterMsg = msg.value;
-        msg.value = '';
-        // 印出user輸入內容
-        addMsg(enterMsg, 'p', true);
         // 排程印出ai回應
-        const sse = new EventSource(`/ai/chat-model/stream${is_Metadata.checked ? '/metadata' : ''}?message=${enterMsg}`)
+        const sse = new EventSource(`/ai/chat-model/stream${isMetadata.checked ? '/metadata' : ''}?message=${enterMsg}`)
         sse.addEventListener("message", msg => {
-            if (is_Metadata.checked) {
+            if (isMetadata.checked) {
                 if (JSON.parse(msg.data).result.metadata.finishReason !== 'STOP') {
                     addMsg(msg.data, 'div');
                 } else {
@@ -92,26 +86,29 @@
         });
     }
 
+    // 創建訊息
     function addMsg(msg, tag = 'p', isQuestion) {
-        const p = document.createElement(tag);
-        p.innerText = msg;
+        const newMsg = document.createElement(tag);
+        newMsg.innerText = msg;
         if (isQuestion) {
-            p.setAttribute('class', 'question')
+            newMsg.setAttribute('class', 'question')
         }
-        history.appendChild(p);
+        history.appendChild(newMsg);
         history.scrollTop = history.scrollHeight;
     }
 
+    // 連續訊息的創建與接續
     function continueMsg(msg, id) {
-        let p = document.getElementById(id);
-        if (p) {
-            p.innerText += msg;
+        let streamMsg = document.getElementById(id);
+        if (streamMsg) {
+            streamMsg.innerText += msg;
         } else {
-            p = document.createElement('p');
-            p.setAttribute('id', id);
-            p.innerText = msg;
-            history.appendChild(p);
+            streamMsg = document.createElement('p');
+            streamMsg.setAttribute('id', id);
+            streamMsg.innerText = msg;
+            history.appendChild(streamMsg);
         }
+        history.scrollTop = history.scrollHeight;
     }
 </script>
 </body>
