@@ -1,6 +1,7 @@
 package com.yanren.openai00.controller;
 
 import com.yanren.openai00.consumer.SseConsumer;
+import com.yanren.openai00.service.MultiRoundsChatService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,10 +12,14 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/ai/chat-client")
 public class OpenAIChatClientController {
+
+    @Autowired
+    MultiRoundsChatService multiRoundsChatService;
 
     final ChatClient chatClient;
 
@@ -61,4 +66,21 @@ public class OpenAIChatClientController {
         return sse;
     }
 
+    // 多輪對話--記憶對話內容
+    @GetMapping("/multi-rounds-chat")
+    String multiRoundsChat(@RequestParam(value = "message") String message) {
+        return multiRoundsChatService.chat(message);
+    }
+
+    // 映射到實體
+    @GetMapping("entity")
+    Menu callEntity(){
+        return chatClient.prompt()
+                .user("以繁體中文隨機生成某間餐廳的五道菜餚名稱")
+                .call()
+                .entity(Menu.class);
+    }
+
 }
+
+record Menu(String restaurant, List<String> dishes){}
