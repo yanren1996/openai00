@@ -1,100 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>openAI-ChatModel</title>
-    <link rel="stylesheet" href="css/main.css">
-</head>
-<body>
-<h1>openAI-ChatModel</h1>
-<label><input id="isStream" type="checkbox">stream</label>
-<label><input id="isMetadata" type="checkbox">metadata</label>
-<br>
-<textarea id="msg" cols="30" rows="3"></textarea>
-<button id="btn">提問</button>
-<a href="chat-client.html">去chat-client用升級版</a>
-<div id="history"></div>
-
-<script>
-    const msg = document.getElementById("msg");
-    const btn = document.getElementById("btn");
-    const isStream = document.getElementById("isStream");
-    const isMetadata = document.getElementById("isMetadata");
-    const history = document.getElementById("history");
-
-    btn.addEventListener("click", () => {
-        // 清空輸入框
-        const enterMsg = msg.value;
-        msg.value = '';
-        // 印出user輸入內容
-        addMsg(enterMsg, 'p', true);
-        // 提交至server
-        if (isStream.checked) {
-            streamSubmit(enterMsg);
-        } else {
-            callSubmit(enterMsg);
-        }
-    })
-
-    async function callSubmit(enterMsg) {
-        const ajax = await fetch(`/ai/chat-model${isMetadata.checked ? '/metadata' : ''}?message=${enterMsg}`);
-        if (isMetadata.checked) {
-            // 先將json轉js物件，再將js物件格式化
-            addMsg(JSON.stringify(JSON.parse(await ajax.text()), null, 2), 'pre');
-        } else {
-            addMsg(await ajax.text());
-        }
-    }
-
-    let streamCount = 0;
-
-    function streamSubmit(enterMsg) {
-        // id計數
-        const current = streamCount;
-        streamCount++;
-        // 排程印出ai回應
-        const sse = new EventSource(`/ai/chat-model/stream${isMetadata.checked ? '/metadata' : ''}?message=${enterMsg}`)
-        sse.addEventListener("message", msg => {
-            if (isMetadata.checked) {
-                if (JSON.parse(msg.data).result.metadata.finishReason !== 'STOP') {
-                    addMsg(msg.data, 'div');
-                } else {
-                    sse.close();
-                }
-            } else {
-                if (msg.data !== "%end%") {
-                    continueMsg(msg.data, current);
-                } else {
-                    sse.close();
-                }
-            }
-        });
-    }
-
-    // 創建訊息
-    function addMsg(msg, tag = 'p', isQuestion) {
-        const newMsg = document.createElement(tag);
-        newMsg.innerText = msg;
-        if (isQuestion) {
-            newMsg.setAttribute('class', 'question')
-        }
-        history.appendChild(newMsg);
-        history.scrollTop = history.scrollHeight;
-    }
-
-    // 連續訊息的創建與接續
-    function continueMsg(msg, id) {
-        let streamMsg = document.getElementById(id);
-        if (streamMsg) {
-            streamMsg.innerText += msg;
-        } else {
-            streamMsg = document.createElement('p');
-            streamMsg.setAttribute('id', id);
-            streamMsg.innerText = msg;
-            history.appendChild(streamMsg);
-        }
-        history.scrollTop = history.scrollHeight;
-    }
-</script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React + TS</title>
+    <script type="module" crossorigin src="/assets/index-CwjLbnDr.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>
