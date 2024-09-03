@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import Root from "./routes/Root";
+import ChatModel from "./routes/ChatModel";
 
 function App() {
 
@@ -7,14 +8,14 @@ function App() {
     {
       path: '/',
       element: <Root></Root>,
-      children:[
-        {
-          path: '/chat-client',
-          element: <span>this is client</span>
-        },
+      children: [
         {
           path: '/chat-model',
-          element: <span>this is Model</span>
+          element: <ChatModel />
+        },
+        {
+          path: '/chat-client',
+          element: <span>this is Client</span>
         },
         {
           path: '/gen-img',
