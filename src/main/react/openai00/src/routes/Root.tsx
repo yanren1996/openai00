@@ -6,10 +6,10 @@ export default function() {
       <span>spring ai測試</span>
       <ul>
         <li>
-          <Link to={'/chat-client'}>Check Client</Link>
+          <Link to={'/chat-model'}>Check Model</Link>
         </li>
         <li>
-          <Link to={'/chat-model'}>Check Model</Link>
+          <Link to={'/chat-client'}>Check Client</Link>
         </li>
         <li>
           <Link to={'/gen-img'}>Gen Image</Link>
