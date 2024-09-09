@@ -58,8 +58,8 @@ export default function () {
           sse.close();
         } else { // ai 接續說
           sethistory(pre => pre.map(item => {
-            if (item.id === 'm_'+ current) {
-              return {...item, content: item.content+=msg.data}
+            if (item.id === 'm_' + current) {
+              return { ...item, content: item.content + msg.data }
             }
             return item;
           }));
