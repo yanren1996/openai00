@@ -30,7 +30,7 @@ export default function () {
 
   return (<>
     <input value={msg} onChange={e => setMsg(e.target.value)} />
-    <label><input type="checkbox" onChange={handleOptChange} checked={opt.isStream} name="isStream" />stream(未完成)</label>
+    <label><input type="checkbox" onChange={handleOptChange} checked={opt.isStream} name="isStream" />stream</label>
     <label><input type="checkbox" onChange={handleOptChange} checked={opt.isMetadata} name="isMetadata" />metadata</label>
     <button onClick={handleClick}>問ai</button>
     <div>

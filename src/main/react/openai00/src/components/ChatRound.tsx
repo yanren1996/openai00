@@ -31,15 +31,26 @@ export default function ChatRound({ question, isMetadata, isStream }: ChatRoundP
       call();
       return () => { ignore = true; }
     } else { // 逐字回復
-      const sse = new EventSource(`http://localhost:8080/ai/chat-model/stream?message=${question}`);
-      sse.addEventListener('message', msg => {
-        if (msg.data !== '%end%') {
-          setAnswer(prevAns => prevAns + msg.data);
-        } else {
-          sse.close();
-          ignore = true;
-        }
-      });
+      const sse = new EventSource(`http://localhost:8080/ai/chat-model/stream${isMetadata ? '/metadata' : ''}?message=${question}`);
+      if (!isMetadata) {
+        sse.addEventListener('message', msg => {
+          if (msg.data !== '%end%') {
+            setAnswer(prevAns => prevAns + msg.data);
+          } else {
+            sse.close();
+            ignore = true;
+          }
+        });
+      } else {
+        sse.addEventListener('message', msg => {
+          if (JSON.parse(msg.data).result.metadata.finishReason !== 'STOP') {
+            setAnswer(prevAns => prevAns + JSON.stringify(JSON.parse(msg.data), null, 2));
+          } else {
+            sse.close();
+            ignore = true;
+          }
+        });
+      }
       return () => {
         if (!ignore) {
           sse.close();
@@ -47,7 +58,7 @@ export default function ChatRound({ question, isMetadata, isStream }: ChatRoundP
       }
     }
   }, [question, isMetadata, isStream]);
-  
+
   return (<>
     <p>{question}</p>
     <pre>{answer}</pre>
